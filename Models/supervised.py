@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-class LinearRegression:
+class LinearRegression():
     """
     Solve OLS with the Normal equation or gradient descent, wrt mse loss function
     """
