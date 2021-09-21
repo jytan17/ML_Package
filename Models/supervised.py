@@ -5,17 +5,19 @@ class LinearRegression:
     """
     Solve OLS with the Normal equation or gradient descent, wrt mse loss function
     """
-    def __init__(self, method, intercept = True):
+    def __init__(self, method, intercept = True, lmbda = 0):
         """
+        Parameters
+        --------
         method: {'gradient_descent', 'linear_algebra'} determines the method used to solve for "w"
         intercept: bool, default to True, determines whether a biased is used
         """
         assert method in ['gradient_descent', 'linear_algebra'], '"method" parameter must be "gradient_descent" or "linear_algebra".'
         self.method = method
         self.intercept = intercept
+        self.lmbda = lmbda
 
     def _add_intercept(self, X):
-        
         interceptor = np.ones((X.shape[0], 1))
         _X = np.append(interceptor, X, axis = 1)
         return _X
@@ -34,14 +36,20 @@ class LinearRegression:
             self.w = np.random.rand(_X.shape[1])
             m = X.shape[0]
             for i in range(epochs):
-                gradient = 1 / m * np.einsum("ij,i", _X, (self.predict(X) - y))
+                lmb = self.lmbda * np.ones_like(self.w)
+                lmb[0] = 0
+                gradient = (1/m) * ((_X.T @ (self.predict(X)-y)) + lmb * self.w)
                 self.w -= lr * gradient
 
+
         elif self.method == 'linear_algebra':
-            self.w = np.linalg.inv(_X.T @ _X) @ (_X.T @ y)
+            n, p = _X.shape
+            A = np.identity(p)
+            A[0,0] = 0 if self.intercept else 1
+            self.w = np.linalg.inv((_X.T @ _X) + (self.lmbda * A)) @ (_X.T @ y)
             
-        self._coef = self.w[1:] if self.intercept else self.w
-        self._intercept = self.w[0] if self.intercept else None
+        self.coef_ = self.w[1:] if self.intercept else self.w
+        self.intercept_ = self.w[0] if self.intercept else None
 
     def predict(self, X):
         """
@@ -69,3 +77,17 @@ class LinearRegression:
         """
         assert metric in ['mse', 'mae'], '"score" parameter must be "mse" or "mae".'
         return ((y - self.predict(X))**2).sum() if metric == 'mse' else abs(y - self.predict(X)).sum()
+
+class RidgeRegression(LinearRegression):
+    """
+    solves regression with L2 regularization
+    """
+    def __init__(self, method, lmbda, intercept = True):
+        """
+        Parameters
+        --------
+        method: {'gradient_descent', 'linear_algebra'} determines the method used to solve for "w"
+        intercept: bool, default to True, determines whether a biased is used
+        lmbda: regularisation parameter, set to 0 == OLS
+        """
+        super().__init__(method, intercept, lmbda)
