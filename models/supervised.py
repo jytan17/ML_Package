@@ -195,10 +195,11 @@ class LogisticRegression():
         """
         n = X.shape[0]
         y_pred = self.predict(X)
-        incorrect = ((y_pred - y)>0).sum()
+        incorrect = ((y_pred != y)>0).sum()
         error_rate = incorrect / n
+        print(((y_pred - y)>0))
         if verbose:
-            print(f"Error Rate: {erro_rate * 100:.2f} %",)
+            print(f"Error Rate: {error_rate * 100:.2f} %",)
         return error_rate
     
     
@@ -484,4 +485,164 @@ class KernelRidgeRegression():
 class FeedForward():
     def __init__(self):
         pass
+    
+    
+    
+    
+##############################################################
+# k nearest neighbour
+##############################################################
+class knn():
+    def __init__(self, Xtr, ytr, k, method = 'l2'):
+        """
+        Description: Initialise the k-nearest neighbour model
+
+        Input:
+            k: the number of nearest neighbours to consider when making predictions
+        """
+        self.method = method
+        self.measure_method = {"l2": self._l2distance}
+        self.Xtr = Xtr
+        self.ytr = ytr
+        self.k = k
+
+        assert self.method in list(self.measure_method.keys()), "Use {L2} norm"
+
+    def _l2distance(self, X, Z=None):
+        if Z is None:
+            Z=X
+
+        n,d1=X.shape
+        m,d2=Z.shape
+        assert (d1==d2), "Dimensions of input vectors must match!"
+
+        # YOUR CODE HERE
+        D = np.zeros((n, m))
+        for i in range(m):
+            z_i = Z[i]
+            D[:, i] = np.linalg.norm(X - z_i, axis = 1)
+
+        return D
+
+    def _findknn(self, Xte):
+        D = self.measure_method[self.method](self.Xtr, Xte)
+        indices = np.argpartition(D, self.k, axis = 0)[:self.k]
+        dists = np.partition(D, self.k, axis = 0)[:self.k]
+        return indices, dists
+
+class knnRegression(knn):
+    def __init__(self, Xtr, ytr, k, method = 'l2'):
+        """
+        Description: Initialise the k-nearest neighbour model
+
+        Input:
+            k: the number of nearest neighbours to consider when making predictions
+            measure: {L2, L1}default to l2, the metrics used to search for nearest neighbours
+        """
+        super().__init__(Xtr, ytr, k, method)
+
+    def predict(self, Xte):
+        """
+        Description: Initialise the k-nearest neighbour model
+
+        Input:
+            X: (n, d) dimensional matrix of datapoints
+
+        Output:
+            preds: predicted class of the corresponding data
+        """
+        indiced, dists = self._findknn(Xte)
+
+        n,d = Xte.shape
+        preds = np.zeros(n)
+        ind = self._findknn(Xte)[0]
+        for i in range(n):
+            indices_i = list(ind[:, i])
+            nn_y_i = self.ytr[indices_i]
+            preds[i] = nn_y_i.mean()
+        return preds
+
+
+    def score(self, X, y, metric = 'mse'):
+        """
+        Description: reports the score of the model on input X and y
+        
+        Input:
+            X: the predictors in shape (n, p) where n is the total number of samples
+            y: the truth labels
+            metric: default to "mse", determines which of {mse or mae} to report
+            
+        Output:
+            score: mse or mae for the input
+        """
+        assert metric in ['mse', 'mae'], '"score" parameter must be "mse" or "mae".'
+        score = ((y - self.predict(X))**2).sum() if metric == 'mse' else abs(y - self.predict(X)).sum()
+        return score
+
+
+class knnClassifier(knn):
+    def __init__(self, Xtr, ytr, k, method = 'l2'):
+        """
+        Description: Initialise the k-nearest neighbour model
+
+        Input:
+            X: (n, d) dimensional matrix of datapoints
+        """
+        super().__init__(Xtr, ytr, k, method)
+
+    def _mode(self, array):
+        unique = list(set(array))
+        mode = None
+        count = np.NINF
+        for i in unique:
+            current_count = (array == i).sum()
+            if current_count > count:
+                count = current_count
+                mode = i
+                
+        return mode
+
+    def predict(self, Xte):
+        """
+        Description: Initialise the k-nearest neighbour model
+
+        Input:
+            X: (n, d) dimensional matrix of datapoints
+
+        Output:
+            preds: predicted class of the corresponding data
+        """
+        indiced, dists = self._findknn(Xte)
+
+        n,d = Xte.shape
+        preds = np.zeros(n)
+        ind = self._findknn(Xte)[0]
+        for i in range(n):
+            indices_i = list(ind[:, i])
+            nn_y_i = self.ytr[indices_i]
+            preds[i] = self._mode(nn_y_i)
+        return preds
+
+
+    def score(self, X, y, verbose = False):
+        """
+        Description: Reports the error rate for the input data and labels
+        
+        Input:
+            X:  (n, p) normalised matrix
+            y: (n,) dimensional vector where each value should be an integer indicating the class of the sample
+            
+        Output:
+            error_rate: a scalar value indicating the percentage of incorrect predictions
+        """
+        n = X.shape[0]
+        y_pred = self.predict(X)
+        incorrect = ((y_pred != y)>0).sum()
+        error_rate = incorrect / n
+        print(((y_pred - y)>0))
+        if verbose:
+            print(f"Error Rate: {error_rate * 100:.2f} %",)
+        return error_rate
+
+
     
