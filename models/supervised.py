@@ -492,7 +492,7 @@ class FeedForward():
 ##############################################################
 # k nearest neighbour
 ##############################################################
-class knn():
+class _knn():
     def __init__(self, Xtr, ytr, k, method = 'l2'):
         """
         Description: Initialise the k-nearest neighbour model
@@ -530,7 +530,7 @@ class knn():
         dists = np.partition(D, self.k, axis = 0)[:self.k]
         return indices, dists
 
-class knnRegression(knn):
+class knnRegression(_knn):
     def __init__(self, Xtr, ytr, k, method = 'l2'):
         """
         Description: Initialise the k-nearest neighbour model
@@ -580,7 +580,7 @@ class knnRegression(knn):
         return score
 
 
-class knnClassifier(knn):
+class knnClassifier(_knn):
     def __init__(self, Xtr, ytr, k, method = 'l2'):
         """
         Description: Initialise the k-nearest neighbour model
