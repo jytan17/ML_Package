@@ -2,20 +2,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.preprocessing
 
-
 ##############################################################
-# Linear regression
+# Regression
 ##############################################################
 class LinearRegression():
-    """
-    Solve OLS with the Normal equation or gradient descent, wrt mse loss function
-    """
+
     def __init__(self, method, intercept = True, lmbda = 0):
         """
-        Parameters
-        --------
-        method: {'gradient_descent', 'linear_algebra'} determines the method used to solve for "w"
-        intercept: bool, default to True, determines whether a biased is used
+        Description: Initialise linear regression model
+        
+        Input:
+            method: {'gradient_descent', 'linear_algebra'} determines the method used to solve for "w"
+            intercept: bool, default to True, determines whether a biased is used
+            lmbda: default to 0, used for ridge regression
         """
         assert method in ['gradient_descent', 'linear_algebra'], '"method" parameter must be "gradient_descent" or "linear_algebra".'
         self.method = method
@@ -29,10 +28,13 @@ class LinearRegression():
 
     def fit(self, X, y, epochs = None, lr = None):
         """
-        X: the predictors in shape (n, p) where n is the total number of samples and p is the number of predictors
-        y: the truth values of each sample in shape (n,)
-        epochs: default to None, determines the number of epochs trained for gradient descent
-        lr: default to None, determines the learning rate for gradient descent
+        Description: train the model with either closed form solution or gradient descent
+        
+        Input:
+            X: the predictors in shape (n, p) where n is the total number of samples and p is the number of predictors
+            y: the truth values of each sample in shape (n,)
+            epochs: default to None, determines the number of epochs trained for gradient descent
+            lr: default to None, determines the learning rate for gradient descent
         """
         _X = self._add_intercept(X) if self.intercept else X
 
@@ -58,54 +60,154 @@ class LinearRegression():
 
     def predict(self, X):
         """
-        Parameters
-        --------
-        X: the predictors in shape (n, p) where n is the total number of samples
+        Description: Predicts the class for each sample in the input
         
-        Returns
-        --------
-        y_hat, the predicted y values
+        Input:
+            X:  (n, p) normalised matrix
+            
+        Output:
+            pred: (n,) dimensional vector where each entry is the models predicted class for the corresponding sample from X
         """
         _X = self._add_intercept(X) if self.intercept else X
-        return _X @ self.w
+        pred = _X @ self.w
+        return pred
 
     def score(self, X, y, metric = 'mse'):
         """
-        Parameters
-        --------
-        X: the predictors in shape (n, p) where n is the total number of samples
-        y: the truth labels
+        Description: reports the score of the model on input X and y
         
-        Returns
-        --------
-        the mse or mae
+        Input:
+            X: the predictors in shape (n, p) where n is the total number of samples
+            y: the truth labels
+            metric: default to "mse", determines which of {mse or mae} to report
+            
+        Output:
+            {mse mae}: mse or mae for the input
         """
         assert metric in ['mse', 'mae'], '"score" parameter must be "mse" or "mae".'
         return ((y - self.predict(X))**2).sum() if metric == 'mse' else abs(y - self.predict(X)).sum()
 
 class RidgeRegression(LinearRegression):
-    """
-    solves regression with L2 regularization
-    """
+
     def __init__(self, method, lmbda, intercept = True):
         """
-        Parameters
-        --------
-        method: {'gradient_descent', 'linear_algebra'} determines the method used to solve for "w"
-        intercept: bool, default to True, determines whether a biased is used
-        lmbda: regularisation parameter, set to 0 == OLS
+        Description: Initialise the ridge regression model
+        
+        Input:
+            method: {'gradient_descent', 'linear_algebra'} determines the method used to solve for "w"
+            intercept: bool, default to True, determines whether a biased is used
+            lmbda: regularisation parameter, set to 0 == OLS
         """
         super().__init__(method, intercept, lmbda)
         
+##############################################################
+# Logistic Regression
+##############################################################
+
+class LogisticRegression():
+
+    def __init__(self, classes, intercept = True):
+        """
+        Description: Initialise logistic regression model
         
+        Input:
+            classes:  number of classes in the dataset
+            intercept: default True, add intercept to model
+        """
+        self.classes = classes
+        self.intercept = intercept
+
+    def _add_intercept(self, X):
+        interceptor = np.ones((X.shape[0], 1))
+        _X = np.append(interceptor, X, axis = 1)
+        return _X
+
+    def _softmax(self, x):
+        return np.exp(x) / sum(np.exp(x))
+
+    def _grad(self, X, y, batch_size):
+        gradient = np.zeros((self.w.shape))
+        for i in range(batch_size):
+            yi = y[[i], :].T ; xi = X[[i], :]
+            yi_hat = self._softmax( self.w @ xi.T )
+            gradient += (yi_hat - yi) @ xi
+        return gradient
+
+    def fit(self, X, y, epochs = 20, lr = 0.1, batch_size = 10):
+        """
+        Description: Trains the logistic regression model with gradient descent
+        
+        Input:
+            X:  (n, p) normalised matrix
+            y: (n,) dimensional vector where each value should be an integer indicating the class of the sample
+            epochs: default to 20, determines the number of epochs to train for
+            lr: default to 0.1, determines the learning rate of gradient descent
+            batch_size: default to 10, determines the size of each batch for mini batch gradient descent
+        """
+        ohe = sklearn.preprocessing.OneHotEncoder().fit(y.reshape(-1,1))
+        _y = ohe.transform(y.reshape(-1, 1))
+        _X = self._add_intercept(X) if self.intercept else X
+        n, p = _X.shape
+        self.w = np.zeros((self.classes, p))
+
+        assert batch_size <= n, 'Batch size must be smaller than the number of samples'
+        for epoch in range(epochs):
+            order = list(np.random.permutation(n))
+            for i in range(n // batch_size):  
+                batch = order[i * batch_size: (i + 1) * batch_size]
+                batched_x = _X[batch] 
+                batched_y = _y[batch]
+                batch_gradient = self._grad(batched_x, batched_y,batch_size)
+                self.w -= lr * batch_gradient / batch_size
+
+        (self.coef_, self.intercept_) =  (self.w[1:], self.w[0]) if self.intercept else (self.w[1:], None)
+
+    def predict(self, X):
+        """
+        Description: Predicts the class for each sample in the input
+        
+        Input:
+            X:  (n, p) normalised matrix
+            
+        Output:
+            pred: (n,) dimensional vector where each entry is the models predicted class for the corresponding sample from X
+        """
+        _X = self._add_intercept(X) if self.intercept else X
+        n, p = _X.shape
+        correct = 0
+        pred = np.zeros((n, 1))
+        for i in range(n):
+            xi = _X[[i], :]
+            pred[i, 0] = np.argmax(self._softmax( self.w @ xi.T ))
+
+        return pred.flatten().astype(int)
+
+    def score(self, X, y, verbose = False):
+        """
+        Description: Reports the error rate for the input data and labels
+        
+        Input:
+            X:  (n, p) normalised matrix
+            y: (n,) dimensional vector where each value should be an integer indicating the class of the sample
+            
+        Output:
+            error_rate: a scalar value indicating the percentage of incorrect predictions
+        """
+        n = X.shape[0]
+        y_pred = self.predict(X)
+        incorrect = ((y_pred - y)>0).sum()
+        error_rate = incorrect / n
+        if verbose:
+            print(f"Error Rate: {erro_rate * 100:.2f} %",)
+        return error_rate
+    
+    
+    
 ##############################################################
 # Trees
 ##############################################################
 
 class _TreeNode():
-    """
-    Tree Node Class forms the basis of the following Tree based methods.
-    """
     
     def __init__(self, left, right, parent, cutoff_id, cutoff_val, prediction):
         self.left = left
@@ -116,18 +218,7 @@ class _TreeNode():
         self.prediction = prediction
 
     def _sqsplit(self, xTr,yTr,weights=[]):
-        """Finds the best feature, cut value, and loss value.
-        
-        Input:
-            xTr:     n x d matrix of data points
-            yTr:     n-dimensional vector of labels
-            weights: n-dimensional weight vector for data points
-        
-        Output:
-            feature:  index of the best cut's feature
-            cut:      cut-value of the best cut
-            bestloss: loss of the best cut
-        """
+
 
         N,D = xTr.shape
         assert D > 0 # must have at least one dimension
@@ -206,23 +297,34 @@ class _TreeNode():
 
 class CART():
     def __init__(self, maxdepth=np.inf):
+        """
+        Discription: Initialise a classification and regression tree (CART) model
+        
+        Input:
+            maxdepth: default to inf, determines the depth of the tree
+        """
         self.maxdepth = maxdepth
         self.root = _TreeNode(None, None, None, None, None, None)
 
     def fit(self, X, y, weights = None):
+        """
+        Discription: Initialise a classification and regression tree (CART) model
+        
+        Input:
+            X: (n, d) matrix of data points
+            y: (n,) vector of labels
+            weights: default to None, used for Adaboost
+        """
         n = X.shape[0]
-        if weights is None:
-            w = np.ones(n) / float(n)
-        else:
-            w = weights
-
+        w = np.ones(n) / float(n) if weights is None else weights
         self.root._generate_nodes(X, y, 1, self.maxdepth, w)
 
     def predict(self, X):
-        """predct y_hat from xTe using decision tree root.
+        """
+        Discription: predct y_hat from xTe using decision tree root.
         
         Input:
-            xTe:  n x d matrix of data points
+            X:  n x d matrix of data points
         
         Output:
             predictions: n-dimensional vector of predictions
@@ -237,18 +339,48 @@ class CART():
             predictions[i] += self.root.predict(x_i)
 
         return predictions
+    
+    def score(self, X, y, metric = 'mse'):
+        """
+        Description: reports the score of the model for input X and label y
+        
+        Input:
+            X: the predictors in shape (n, p) where n is the total number of samples
+            y: the truth labels
+            metric: default to "mse", determines which of {mse or mae} to report
+            
+        Output:
+            {mse mae}: mse or mae for the input
+        """
+        assert metric in ['mse', 'mae'], '"score" parameter must be "mse" or "mae".'
+        return ((y - self.predict(X))**2).sum() if metric == 'mse' else abs(y - self.predict(X)).sum()
 
 
 class RandomForest():
-    def __init__(self, m, maxdepth=np.inf):
-        self.m = m
+    def __init__(self, maxiter = 100, maxdepth=np.inf):
+        """
+        Description: Initialise a random forest model
+        
+        Input:
+            maxiter: default to 100, determines the maximum number of trees
+            maxdepth: default to inf, determines the depth of each tree
+        """
+        self.maxiter = maxiter
         self.maxdepth = maxdepth
         self.alphas = None
         self.trees = [] # a list to store all the trees, each entry is the root of the tree
 
     def fit(self, X, y):
+        """
+        Description: Fit the random forest with input X and y
+        
+        Input:
+            X: (n, d) matrix of data points
+            y: (n,) vector of labels
+            
+        """
         n = X.shape[0]
-        for i in range(self.m):
+        for i in range(self.maxiter):
             samples = np.random.choice(n, n, True) # sample from training set, with replacment
             sample_X = X[samples] # get a new set of training X with the sampled indices
             sample_y = y[samples] # get a new set of training y with the sampled indices
@@ -257,15 +389,14 @@ class RandomForest():
             self.trees.append(tree.root)
 
     def predict(self, X):
-        """Evaluates X using trees.
+        """
+        Description: Evaluates X using trees.
         
         Input:
-            trees:  list of TreeNode decision trees of length m
             X:      n x d matrix of data points
-            alphas: m-dimensional weight vector
             
         Output:
-            pred: n-dimensional vector of predictions
+            pred: (n,) dimensional vector of predictions
         """
         m = len(self.trees)
         n,d = X.shape
@@ -281,23 +412,33 @@ class RandomForest():
             pred[i] = np.sum(pred_x * self.alphas)
 
         return pred
+    
+   def score(self, X, y, metric = 'mse'):
+        """
+        Description: reports the score of the model for input X and label y
+        
+        Input:
+            X: the predictors in shape (n, p) where n is the total number of samples
+            y: the truth labels
+            metric: default to "mse", determines which of {mse or mae} to report
+            
+        Output:
+            {mse mae}: mse or mae for the input
+        """
+        assert metric in ['mse', 'mae'], '"score" parameter must be "mse" or "mae".'
+        return ((y - self.predict(X))**2).sum() if metric == 'mse' else abs(y - self.predict(X)).sum()
 
 class AdaboostTree(RandomForest):
-    """Learns a boosted decision tree.
-    Input:
-        x:        n x d matrix of data points
-        y:        n-dimensional vector of labels
-        maxiter:  maximum number of trees
-        maxdepth: maximum depth of a tree
-        
-    Output:
-        forest: list of TreeNode decision trees of length m
-        alphas: m-dimensional weight vector
-        
-    (note, m is at most maxiter, but may be smaller,
-    as dictated by the Adaboost algorithm)
-    """
+
     def __init__(self, maxiter = 100, maxdepth=2):
+        """
+        Description: Learns a boosted decision tree.
+
+        Input:
+            maxiter:  default to 100, determines the maximum number of trees
+            maxdepth: default to 2, determines maximum depth of a tree
+
+        """
         super().__init__(maxdepth)
         self.maxdepth = maxdepth
         self.maxiter = maxiter
