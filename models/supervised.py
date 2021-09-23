@@ -467,7 +467,7 @@ class AdaboostTree(RandomForest):
             else:
                 break
 ##############################################################
-# Kernel Methods
+# primal/kernelSVM
 ##############################################################
 
 class _kernels():
