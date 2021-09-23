@@ -470,11 +470,117 @@ class AdaboostTree(RandomForest):
 # Kernel Methods
 ##############################################################
 
-class SVM():
-    def __init__(self):
-        pass
-                
-class KernelRidgeRegression():
+class _kernels():
+    def __init__(self, *k_param):
+        self.methods = {"rbf": self._rbf, 
+                        "polynomial": self._polynomial,
+                        "linear": self._linear}
+        self.k_param = k_param
+
+    def _rbf(self, X, Z):
+        kpar = self.k_param[0]
+        a, b = np.sum(X**2, axis = -1, keepdims = True), np.sum(Z**2, axis = -1, keepdims = True).T
+        norm = a + b - 2*(X@Z.T)
+        self.K = np.exp(-kpar * norm)
+
+    def _polynomial(self, X, Z):
+        kpar = self.k_param[0]
+        self.K = (1 + X.dot(Z.T))**kpar
+
+    def _linear(self, X, Z):
+        self.K = X.dot(Z.T)
+
+class primalSVM():
+    def __init__(self, C=1):
+        """
+        Description: initialise a primal SVM primal SVM.
+
+        Input:
+            C : the SVM regularization parameter
+        """
+        self.C = C
+    def fit(self, Xtr, ytr)
+        """
+        Input:
+            xTr   | training data (nxd)
+            yTr   | training labels (n)
+        
+        Output:
+            fun   | usage: predictions=fun(xTe); predictions.shape = (n,)
+            wout  | the weight vector calculated by the solver
+            bout  | the bias term calculated by the solver
+        """
+        N, d = xtr.shape
+        y = ytr.flatten()
+
+        w = Variable(d)
+        b = Variable(1)
+        objective = C * sum(pos(1 - multiply(y, xTr @ w + b))) + norm(w, 2)**2
+        constraints = [w >= 0]
+        prob = Problem(Minimize(objective), constraints)
+        prob.solve()
+
+        self.coef_ = w.value
+        self.intercept_ = b.value    
+        fun = lambda x: x.dot(wout) + bout
+
+    def predict(self, X):
+        pred = X.dot(self.coef_) + self.intercept_
+        return pred
+
+class kernelSVM(_kernels)
+    def __init__(self, C, ktype, *k_param):
+        super().__init__(ktype, *k_param)
+        self.C = C
+
+    def fit(self, Xtr, ytr):
+        """
+        function alpha = dualqp(K,yTr,C)
+        constructs the SVM dual formulation and uses a built-in 
+        convex solver to find the optimal solution. 
+        
+        Input:
+            K     | the (nxn) kernel matrix
+            yTr   | training labels (nx1)
+            C     | the SVM regularization parameter
+        
+        Output:
+            alpha | the calculated solution vector (nx1)
+        """
+
+        # get kernel matrix
+        self.methods[self.ktype](Xtr, Xtr)
+        self.K = (self.K + self.K.T) / 2 + eps * np.eye(self.K.shape[0])
+        self.K = self.K.astype('float128')
+
+        y = ytr.flatten()
+        N, _ = self.K.shape
+
+        # solve for alphas, the support vectors
+        alpha = Variable(N)
+        outerY = np.outer(y, y)
+        G = outerY * self.K
+        objective = 1/2 * quad_form(alpha, G) - sum(alpha)
+        constraint = [alpha >= 0, alpha <= C, sum(multiply(alpha, y)) == 0]
+        prob = Problem(Minimize(objective), constraint)
+        prob.solve()
+
+        alpha = np.array(alpha.value).flatten()
+        self.support_vector = alpha
+
+        # recover the bias
+        distances = np.abs(alpha - self.C/2)
+        i = np.where(distances == distances.min())[0][0]
+        k = K[:, [i]]
+        self.intercept_ = yTr[i] - np.vdot(alpha * ytr, k)
+
+        self.support_vector[alpha < 10e-7] = 0.0
+
+    def predict(self, X):
+        pred = (yTr * alpha).reshape((1,-1)).dot(computeK(ktype, xTr, xTe, lmbda)) + b
+        return
+
+class kernelRidgeRegression(_kernels):
     def __init__(self):
         pass
     
