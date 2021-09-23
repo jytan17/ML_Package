@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.preprocessing
+from cvxpy import *
 
 ##############################################################
 # Regression
