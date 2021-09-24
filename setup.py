@@ -1,16 +1,16 @@
-from setuptools import setup
+import setuptools
 
-setup(
-    # Needed to silence warnings (and to be a worthwhile package)
+setuptools.setup(
     name='models',
-    url='https://github.com/jytan17/ML_Package',
+    version='0.0.1',
     author='Junyong Tan',
     author_email='jtan9801@gmail.com',
-    # Needed to actually package something
-    packages=['models'] #, 'models.supervised', 'models.unsupervised'],
-    # Needed for dependencies
-    install_requires=['numpy', 'matplotlib', 'sklearn', 'cvxpy'],
-    # The license can be anything you like
-    license='None',
-    description='A small package of commonly used machine learning algorithms'
+    description='A small machine learning package',
+    url='https://github.com/jytan17/ML_Package',
+    project_urls = {
+        "Bug Tracker": "https://github.com/jytan17/ML_Package/issues"
+    },
+    license='MIT',
+    packages=['models'],
+    install_requires=['sklearn', 'numpy', 'cvxpy', 'matplotlib', 'scipy'],
 )
