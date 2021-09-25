@@ -7,7 +7,7 @@ This package was developed for my own educational purposes and therefore, it is 
 - [x] Linear Regression
 - [x] Ridge Regression
 - [ ] Lasso Regression
-- [x] Tree
+- [x] Classification and Regression Tree (CART)
 - [x] Random Forest
 - [x] Adaboosted Trees
 - [x] Support Vector Machine (SVM)
