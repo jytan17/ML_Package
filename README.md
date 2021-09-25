@@ -3,12 +3,12 @@ Implementation of machine learning algorithms from scratch.
 
 This package was developed for my own educational purposes and therefore, it is not recommended for actual usage.
 ## Table of Contents
-1. [Algorithms](# algorithms)
-2. [Installation](# installation)
-3. [Example usecases](# examples)
-    1. [SVM](# svm)
-    2. [PCA](# pca)
-    3. [Adaboosted Trees](# tree)   
+1. [Algorithms](#algorithms)
+2. [Installation](#installation)
+3. [Example usecases](#examples)
+    1. [SVM](#svm)
+    2. [PCA](#pca)
+    3. [Adaboosted Trees](#tree)   
 
 ## Algorithms (Implemented/planned) <a name="algorithms"></a>
 - [x] Linear Regression
