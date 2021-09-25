@@ -469,10 +469,9 @@ class AdaboostTree(RandomForest):
 ##############################################################
 # primal/kernelSVM
 ##############################################################
-
 class _kernels():
     def __init__(self, *k_param):
-        self.methods = {"rbf": self._rbf, 
+        self.kernels = {"rbf": self._rbf, 
                         "polynomial": self._polynomial,
                         "linear": self._linear}
         self.k_param = k_param
@@ -481,59 +480,30 @@ class _kernels():
         kpar = self.k_param[0]
         a, b = np.sum(X**2, axis = -1, keepdims = True), np.sum(Z**2, axis = -1, keepdims = True).T
         norm = a + b - 2*(X@Z.T)
-        self.K = np.exp(-kpar * norm)
+        K = np.exp(-kpar * norm)
+        return K
 
     def _polynomial(self, X, Z):
         kpar = self.k_param[0]
-        self.K = (1 + X.dot(Z.T))**kpar
+        K = (1 + X.dot(Z.T))**kpar
+        return K
 
     def _linear(self, X, Z):
-        self.K = X.dot(Z.T)
+        K = X.dot(Z.T)
+        return K
 
-class primalSVM():
-    def __init__(self, C=1):
-        """
-        Description: initialise a primal SVM primal SVM.
 
-        Input:
-            C : the SVM regularization parameter
-        """
-        self.C = C
-    def fit(self, Xtr, ytr)
-        """
-        Input:
-            xTr   | training data (nxd)
-            yTr   | training labels (n)
-        
-        Output:
-            fun   | usage: predictions=fun(xTe); predictions.shape = (n,)
-            wout  | the weight vector calculated by the solver
-            bout  | the bias term calculated by the solver
-        """
-        N, d = xtr.shape
-        y = ytr.flatten()
 
-        w = Variable(d)
-        b = Variable(1)
-        objective = C * sum(pos(1 - multiply(y, xTr @ w + b))) + norm(w, 2)**2
-        constraints = [w >= 0]
-        prob = Problem(Minimize(objective), constraints)
-        prob.solve()
 
-        self.coef_ = w.value
-        self.intercept_ = b.value    
-        fun = lambda x: x.dot(wout) + bout
+class kernelSVM(_kernels):
 
-    def predict(self, X):
-        pred = X.dot(self.coef_) + self.intercept_
-        return pred
-
-class kernelSVM(_kernels)
     def __init__(self, C, ktype, *k_param):
-        super().__init__(ktype, *k_param)
+        super().__init__(*k_param)
+        self.ktype = ktype
+        self.computeK = self.kernels[self.ktype]
         self.C = C
 
-    def fit(self, Xtr, ytr):
+    def _dualqp(self, K, yTr, C):
         """
         function alpha = dualqp(K,yTr,C)
         constructs the SVM dual formulation and uses a built-in 
@@ -547,38 +517,111 @@ class kernelSVM(_kernels)
         Output:
             alpha | the calculated solution vector (nx1)
         """
-
-        # get kernel matrix
-        self.methods[self.ktype](Xtr, Xtr)
-        self.K = (self.K + self.K.T) / 2 + eps * np.eye(self.K.shape[0])
-        self.K = self.K.astype('float128')
-
-        y = ytr.flatten()
-        N, _ = self.K.shape
-
-        # solve for alphas, the support vectors
+        y = yTr.flatten()
+        N, _ = K.shape
         alpha = Variable(N)
         outerY = np.outer(y, y)
-        G = outerY * self.K
+        G = outerY * K
         objective = 1/2 * quad_form(alpha, G) - sum(alpha)
         constraint = [alpha >= 0, alpha <= C, sum(multiply(alpha, y)) == 0]
         prob = Problem(Minimize(objective), constraint)
         prob.solve()
 
-        alpha = np.array(alpha.value).flatten()
-        self.support_vector = alpha
+        return np.array(alpha.value).flatten()
+    
 
-        # recover the bias
-        distances = np.abs(alpha - self.C/2)
+    def _recoverBias(self, K,yTr,alphas,C):
+        """
+        function bias=recoverBias(K,yTr,alpha,C);
+        Solves for the hyperplane bias term, which is uniquely specified by the 
+        support vectors with alpha values 0<alpha<C
+        
+        INPUT:
+        K : nxn kernel matrix
+        yTr : nx1 input labels
+        alpha  : nx1 vector of alpha values
+        C : regularization constant
+        
+        Output:
+        bias : the scalar hyperplane bias of the kernel SVM specified by alphas
+        """
+        distances = np.abs(alphas - C/2)
         i = np.where(distances == distances.min())[0][0]
         k = K[:, [i]]
-        self.intercept_ = yTr[i] - np.vdot(alpha * ytr, k)
+        b = yTr[i] - np.vdot(alphas * yTr, k)
 
-        self.support_vector[alpha < 10e-7] = 0.0
+        return b
+
+    def fit(self, xTr,yTr):
+        """
+        function classifier = dualSVM(xTr,yTr,C,ktype,lmbda);
+        Constructs the SVM dual formulation and uses a built-in 
+        convex solver to find the optimal solution. 
+        
+        Input:
+            xTr   | training data (nxd)
+            yTr   | training labels (nx1)
+        
+        Output:
+            svmclassify | usage: predictions=svmclassify(xTe);
+        """
+        self.xTr, self.yTr = xTr, yTr
+        xTr = xTr.astype('float128')
+        K = self.computeK(self.xTr, self.xTr)
+        eps=1e-10
+        K = (K + K.T) / 2 + eps * np.eye(K.shape[0])
+        K = K.astype('float128')
+
+        self.alpha = self._dualqp(K, yTr, self.C)
+        self.b = self._recoverBias(K, yTr, self.alpha, self.C)
+
+        self.alpha[self.alpha < 0.000001] = 0
+
+    def predict(self, xTe):
+        preds = (self.yTr * self.alpha).reshape((1,-1)).dot(self.computeK(self.xTr, xTe)) + self.b
+        return preds
+
+    def score(self, Xte, yte):
+        preds = self.predict(Xte)
+        
+
+class primalSVM():
+    def __init__(self, C=1):
+        """
+        Description: initialise a primal SVM primal SVM.
+
+        Input:
+            C : the SVM regularization parameter
+        """
+        self.C = C
+    def fit(self, Xtr, ytr):
+        """
+        Input:
+            xTr   | training data (nxd)
+            yTr   | training labels (n)
+        
+        Output:
+            fun   | usage: predictions=fun(xTe); predictions.shape = (n,)
+            wout  | the weight vector calculated by the solver
+            bout  | the bias term calculated by the solver
+        """
+        N, d = Xtr.shape
+        y = ytr.flatten()
+
+        w = Variable(d)
+        b = Variable(1)
+        objective = self.C * sum(pos(1 - multiply(y, xTr @ w + b))) + norm(w, 2)**2
+        constraints = [w >= 0]
+        prob = Problem(Minimize(objective), constraints)
+        prob.solve()
+
+        self.coef_ = w.value
+        self.intercept_ = b.value    
+        fun = lambda x: x.dot(wout) + bout
 
     def predict(self, X):
-        pred = (yTr * alpha).reshape((1,-1)).dot(computeK(ktype, xTr, xTe, lmbda)) + b
-        return
+        pred = X.dot(self.coef_) + self.intercept_
+        return pred
 
 class kernelRidgeRegression(_kernels):
     def __init__(self):
