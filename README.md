@@ -25,11 +25,11 @@ def spiraldata(N=300):
     return xTr,yTr,xTe,yTe
     
  xTr,yTr,xTe,yTe=spiraldata()
- 
-clf = kernelSVM(C=10, ktype="rbf", 1)
-clf.fit(xTr, yTr)
-clf.score(xTe, yTe)
 
+
+clf = kernelSVM(C=10, ktype="rbf", 1)   # initiate a kernelSVM classifier
+clf.fit(xTr, yTr)                       # fit the model; models parameters can be obtained with clf.coef_ and clf.intercept_
+clf.score(xTe, yTe)                     # obtain the error rate of the model on dataset xTe, yTe
 ```
 
 ## Example usecase of PCA
