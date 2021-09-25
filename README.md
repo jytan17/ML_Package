@@ -10,7 +10,10 @@ Some interesting experiments to test my implementations were documented here "ht
 pip install git+https://github.com/jytan17/ML_Package
 ```
 
-## Example usecase of kernelised SVM
+## Example usecases
+
+
+### kernelised SVM
 ```python
 import numpy as np
 from models.supervised import kernelSVM
@@ -39,7 +42,7 @@ clf.fit(xTr, yTr)                       # fit the model; models parameters can b
 clf.score(xTe, yTe)                     # obtain the error rate of the model on dataset xTe, yTe
 ```
 
-## Example usecase of PCA
+### PCA
 
 ```python
 
@@ -47,7 +50,7 @@ clf.score(xTe, yTe)                     # obtain the error rate of the model on 
 ```
 
 
-## Example usecase of Regression Trees with Boosting
+### Regression Trees with adaboost
 
 ```python
 import ML
