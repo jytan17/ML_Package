@@ -1,4 +1,4 @@
-# ML Package
+# Machine Learning Package
 Implementation of machine learning algorithms from scratch. 
 
 This package was developed for my own educational purposes and therefore, it is not recommended for actual usage.
