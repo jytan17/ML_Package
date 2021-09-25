@@ -1,6 +1,11 @@
 # ML Package
 Implementation of machine learning algorithms from scratch, packaged.
 
+## Installation
+```python
+pip install git+https://github.com/jytan17/ML_Package
+```
+
 ## Example usecase of SVM
 ```python
 
