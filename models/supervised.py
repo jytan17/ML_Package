@@ -471,9 +471,9 @@ class AdaboostTree(RandomForest):
 ##############################################################
 class _kernels():
     def __init__(self, *k_param):
-        self.kernels = {"rbf": self._rbf, 
-                        "polynomial": self._polynomial,
-                        "linear": self._linear}
+        self.kernels = {"rbf": self._rbf} 
+                        # "polynomial": self._polynomial,
+                        # "linear": self._linear}
         self.k_param = k_param
 
     def _rbf(self, X, Z):
@@ -483,14 +483,14 @@ class _kernels():
         K = np.exp(-kpar * norm)
         return K
 
-    def _polynomial(self, X, Z):
-        kpar = self.k_param[0]
-        K = (1 + X.dot(Z.T))**kpar
-        return K
+    # def _polynomial(self, X, Z):
+    #     kpar = self.k_param[0]
+    #     K = (1 + X.dot(Z.T))**kpar
+    #     return K
 
-    def _linear(self, X, Z):
-        K = X.dot(Z.T)
-        return K
+    # def _linear(self, X, Z):
+    #     K = X.dot(Z.T)
+    #     return K
 
 
 
@@ -561,16 +561,11 @@ class kernelSVM(_kernels):
         Input:
             xTr   | training data (nxd)
             yTr   | training labels (nx1)
-        
-        Output:
-            svmclassify | usage: predictions=svmclassify(xTe);
         """
         self.xTr, self.yTr = xTr, yTr
-        xTr = xTr.astype('float128')
         K = self.computeK(self.xTr, self.xTr)
-        eps=1e-10
+        eps = 0.00001
         K = (K + K.T) / 2 + eps * np.eye(K.shape[0])
-        K = K.astype('float128')
 
         self.alpha = self._dualqp(K, yTr, self.C)
         self.b = self._recoverBias(K, yTr, self.alpha, self.C)
