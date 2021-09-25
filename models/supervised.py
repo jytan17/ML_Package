@@ -606,7 +606,6 @@ class primalSVM():
     def __init__(self, C=1):
         """
         Description: initialise a primal SVM primal SVM.
-
         Input:
             C : the SVM regularization parameter
         """
@@ -622,19 +621,18 @@ class primalSVM():
             wout  | the weight vector calculated by the solver
             bout  | the bias term calculated by the solver
         """
+        self.xTr, self.yTr = Xtr, ytr.flatten()
         N, d = Xtr.shape
-        y = ytr.flatten()
 
         w = Variable(d)
         b = Variable(1)
-        objective = self.C * sum(pos(1 - multiply(y, xTr @ w + b))) + norm(w, 2)**2
+        objective = self.C * sum(pos(1 - multiply(self.yTr, self.xTr @ w + b))) + norm(w, 2)**2
         constraints = [w >= 0]
         prob = Problem(Minimize(objective), constraints)
         prob.solve()
 
         self.coef_ = w.value
-        self.intercept_ = b.value    
-        fun = lambda x: x.dot(wout) + bout
+        self.intercept_ = b.value
 
     def predict(self, X):
         pred = X.dot(self.coef_) + self.intercept_
