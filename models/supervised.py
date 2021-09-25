@@ -415,7 +415,7 @@ class RandomForest():
 
         return pred
     
-   def score(self, X, y, metric = 'mse'):
+    def score(self, X, y, metric = 'mse'):
         """
         Description: reports the score of the model for input X and label y
         
