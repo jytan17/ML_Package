@@ -3,6 +3,23 @@ Implementation of machine learning algorithms from scratch.
 
 This package was developed for my own educational purposes and therefore, it is not recommended for actual usage.
 
+## Algorithms (Implemented/planned)
+- [x] Linear Regression
+- [x] Ridge Regression
+- [ ] Lasso Regression
+- [x] Tree
+- [x] Random Forest
+- [x] Adaboosted Trees
+- [x] Support Vector Machine (SVM)
+- [x] Kernelised SVM
+- [ ] Kernelised Linear/Ridge Regression
+- [x] k-nearest neighbours
+- [x] Feedforward Network
+- [ ] Recurrent Neural Network (Vanilla)
+- [x] PCA
+- [ ] K means
+- [ ] Gaussian Mixture Model
+
 Some interesting experiments to test my implementations were documented here "https://jytan17.github.io/Machine-Learning-package/"!
 
 ## Installation
