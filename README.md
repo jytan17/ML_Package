@@ -7,7 +7,7 @@ This package was developed for my own educational purposes and therefore, it is 
 2. [Installation](# Installation)
 3. [Example usecases](# Example Usecases)
 
-## Algorithms (Implemented/planned)
+### Algorithms (Implemented/planned)
 - [x] Linear Regression
 - [x] Ridge Regression
 - [ ] Lasso Regression
@@ -27,15 +27,15 @@ This package was developed for my own educational purposes and therefore, it is 
 
 Some interesting experiments to test my implementations were documented here "https://jytan17.github.io/Machine-Learning-package/"!
 
-## Installation
+### Installation
 ```python
 pip install git+https://github.com/jytan17/ML_Package
 ```
 
-## Example usecases
+### Example usecases
 
 
-### kernelised SVM
+#### kernelised SVM
 ```python
 import numpy as np
 from models.supervised import kernelSVM
@@ -64,7 +64,7 @@ clf.fit(xTr, yTr)                       # fit the model; models parameters can b
 clf.score(xTe, yTe)                     # obtain the error rate of the model on dataset xTe, yTe
 ```
 
-### PCA
+#### PCA
 
 ```python
 
@@ -72,7 +72,7 @@ clf.score(xTe, yTe)                     # obtain the error rate of the model on 
 ```
 
 
-### Regression Trees with adaboost
+#### Regression Trees with adaboost
 
 ```python
 import ML
