@@ -2,6 +2,10 @@
 Implementation of machine learning algorithms from scratch. 
 
 This package was developed for my own educational purposes and therefore, it is not recommended for actual usage.
+## Table of Contents
+1. [Algorithms]
+2. [Installation]
+3. [Example usecases]
 
 ## Algorithms (Implemented/planned)
 - [x] Linear Regression
