@@ -1,5 +1,9 @@
 # ML Package
-Implementation of machine learning algorithms from scratch, packaged.
+Implementation of machine learning algorithms from scratch. 
+
+This package was developed for my own educational purposes and therefore, it is not recommended for actual usage.
+
+Some interesting experiments to test my implementations were documented here "https://jytan17.github.io/Machine-Learning-package/"!
 
 ## Installation
 ```python
