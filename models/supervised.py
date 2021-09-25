@@ -581,8 +581,25 @@ class kernelSVM(_kernels):
         preds = (self.yTr * self.alpha).reshape((1,-1)).dot(self.computeK(self.xTr, xTe)) + self.b
         return preds
 
-    def score(self, Xte, yte):
-        preds = self.predict(Xte)
+    def score(self, X, y, verbose = False):
+        """
+        Description: Reports the error rate for the input data and labels
+        
+        Input:
+            X:  (n, p) normalised matrix
+            y: (n,) dimensional vector where each value should be an integer indicating the class of the sample
+            
+        Output:
+            error_rate: a scalar value indicating the percentage of incorrect predictions
+        """
+        n = X.shape[0]
+        y_pred = self.predict(X)
+        incorrect = ((y_pred != y)>0).sum()
+        error_rate = incorrect / n
+        print(((y_pred - y)>0))
+        if verbose:
+            print(f"Error Rate: {error_rate * 100:.2f} %",)
+        return error_rate
         
 
 class primalSVM():
@@ -622,6 +639,26 @@ class primalSVM():
     def predict(self, X):
         pred = X.dot(self.coef_) + self.intercept_
         return pred
+    
+    def score(self, X, y, verbose = False):
+        """
+        Description: Reports the error rate for the input data and labels
+        
+        Input:
+            X:  (n, p) normalised matrix
+            y: (n,) dimensional vector where each value should be an integer indicating the class of the sample
+            
+        Output:
+            error_rate: a scalar value indicating the percentage of incorrect predictions
+        """
+        n = X.shape[0]
+        y_pred = self.predict(X)
+        incorrect = ((y_pred != y)>0).sum()
+        error_rate = incorrect / n
+        print(((y_pred - y)>0))
+        if verbose:
+            print(f"Error Rate: {error_rate * 100:.2f} %",)
+        return error_rate
 
 class kernelRidgeRegression(_kernels):
     def __init__(self):
