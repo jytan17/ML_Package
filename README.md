@@ -10,7 +10,7 @@ Some interesting experiments to test my implementations were documented here "ht
 pip install git+https://github.com/jytan17/ML_Package
 ```
 
-## Example usecase of SVM
+## Example usecase of kernelised SVM
 ```python
 import numpy as np
 from models.supervised import kernelSVM
