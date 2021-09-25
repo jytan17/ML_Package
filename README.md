@@ -17,7 +17,7 @@ This package was developed for my own educational purposes and therefore, it is 
 - [x] Feedforward Network
 - [ ] Recurrent Neural Network (Vanilla)
 - [x] PCA
-- [ ] K means
+- [x] K-means
 - [ ] Gaussian Mixture Model
 
 Some interesting experiments to test my implementations were documented here "https://jytan17.github.io/Machine-Learning-package/"!
