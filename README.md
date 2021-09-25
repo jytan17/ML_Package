@@ -14,7 +14,7 @@ This package was developed for my own educational purposes and therefore, it is 
 - [x] Support Vector Machine (SVM)
 - [x] Kernelised SVM
 - [ ] Kernelised Linear/Ridge Regression
-- [x] k-nearest neighbours
+- [x] K-Nearest Neighbours
 - [x] Feedforward Network
 - [ ] Recurrent Neural Network (Vanilla)
 - [x] PCA
