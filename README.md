@@ -8,6 +8,9 @@ pip install git+https://github.com/jytan17/ML_Package
 
 ## Example usecase of SVM
 ```python
+import numpy as np
+from models.supervised import kernelSVM
+
 # generate a spiral dataset
 def spiraldata(N=300):
     r = np.linspace(1,2*np.pi,N)
