@@ -14,13 +14,13 @@ This package was developed for my own educational purposes and therefore, it is 
 - [x] Linear Regression
 - [x] Ridge Regression
 - [ ] Lasso Regression
+- [ ] Kernelised Regression
 - [x] Logistic Regression
 - [x] Classification and Regression Tree (CART)
 - [x] Random Forest
 - [x] Adaboosted Trees
 - [x] Support Vector Machine (SVM)
 - [x] Kernelised SVM
-- [ ] Kernelised Linear/Ridge Regression
 - [x] K-Nearest Neighbours
 - [x] Feedforward Network
 - [ ] Recurrent Neural Network (Vanilla)
