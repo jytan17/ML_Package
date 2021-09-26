@@ -4,208 +4,6 @@ import sklearn.preprocessing
 from cvxpy import *
 
 ##############################################################
-# Regression
-##############################################################
-class LinearRegression():
-
-    def __init__(self, method, intercept = True, lmbda = 0):
-        """
-        Description: Initialise linear regression model
-        
-        Input:
-            method: {'gradient_descent', 'linear_algebra'} determines the method used to solve for "w"
-            intercept: bool, default to True, determines whether a biased is used
-            lmbda: default to 0, used for ridge regression
-        """
-        assert method in ['gradient_descent', 'linear_algebra'], '"method" parameter must be "gradient_descent" or "linear_algebra".'
-        self.method = method
-        self.intercept = intercept
-        self.lmbda = lmbda
-
-    def _add_intercept(self, X):
-        interceptor = np.ones((X.shape[0], 1))
-        _X = np.append(interceptor, X, axis = 1)
-        return _X
-
-    def fit(self, X, y, epochs = None, lr = None):
-        """
-        Description: train the model with either closed form solution or gradient descent
-        
-        Input:
-            X: the predictors in shape (n, p) where n is the total number of samples and p is the number of predictors
-            y: the truth values of each sample in shape (n,)
-            epochs: default to None, determines the number of epochs trained for gradient descent
-            lr: default to None, determines the learning rate for gradient descent
-        """
-        _X = self._add_intercept(X) if self.intercept else X
-
-        if self.method == 'gradient_descent':
-            assert isinstance(epochs, int) and isinstance(lr, float), "Specify learning rate and/or epochs"
-            self.w = np.random.rand(_X.shape[1])
-            m = X.shape[0]
-            for i in range(epochs):
-                lmb = self.lmbda * np.ones_like(self.w)
-                lmb[0] = 0
-                gradient = (1/m) * ((_X.T @ (self.predict(X)-y)) + lmb * self.w)
-                self.w -= lr * gradient
-
-
-        elif self.method == 'linear_algebra':
-            n, p = _X.shape
-            A = np.identity(p)
-            A[0,0] = 0 if self.intercept else 1
-            self.w = np.linalg.inv((_X.T @ _X) + (self.lmbda * A)) @ (_X.T @ y)
-            
-        self.coef_ = self.w[1:] if self.intercept else self.w
-        self.intercept_ = self.w[0] if self.intercept else None
-
-    def predict(self, X):
-        """
-        Description: Predicts the class for each sample in the input
-        
-        Input:
-            X:  (n, p) normalised matrix
-            
-        Output:
-            pred: (n,) dimensional vector where each entry is the models predicted class for the corresponding sample from X
-        """
-        _X = self._add_intercept(X) if self.intercept else X
-        pred = _X @ self.w
-        return pred
-
-    def score(self, X, y, metric = 'mse'):
-        """
-        Description: reports the score of the model on input X and y
-        
-        Input:
-            X: the predictors in shape (n, p) where n is the total number of samples
-            y: the truth labels
-            metric: default to "mse", determines which of {mse or mae} to report
-            
-        Output:
-            {mse mae}: mse or mae for the input
-        """
-        assert metric in ['mse', 'mae'], '"score" parameter must be "mse" or "mae".'
-        return ((y - self.predict(X))**2).sum() if metric == 'mse' else abs(y - self.predict(X)).sum()
-
-class RidgeRegression(LinearRegression):
-
-    def __init__(self, method, lmbda, intercept = True):
-        """
-        Description: Initialise the ridge regression model
-        
-        Input:
-            method: {'gradient_descent', 'linear_algebra'} determines the method used to solve for "w"
-            intercept: bool, default to True, determines whether a biased is used
-            lmbda: regularisation parameter, set to 0 == OLS
-        """
-        super().__init__(method, intercept, lmbda)
-        
-##############################################################
-# Logistic Regression
-##############################################################
-
-class LogisticRegression():
-
-    def __init__(self, classes, intercept = True):
-        """
-        Description: Initialise logistic regression model
-        
-        Input:
-            classes:  number of classes in the dataset
-            intercept: default True, add intercept to model
-        """
-        self.classes = classes
-        self.intercept = intercept
-
-    def _add_intercept(self, X):
-        interceptor = np.ones((X.shape[0], 1))
-        _X = np.append(interceptor, X, axis = 1)
-        return _X
-
-    def _softmax(self, x):
-        return np.exp(x) / sum(np.exp(x))
-
-    def _grad(self, X, y, batch_size):
-        gradient = np.zeros((self.w.shape))
-        for i in range(batch_size):
-            yi = y[[i], :].T ; xi = X[[i], :]
-            yi_hat = self._softmax( self.w @ xi.T )
-            gradient += (yi_hat - yi) @ xi
-        return gradient
-
-    def fit(self, X, y, epochs = 20, lr = 0.1, batch_size = 10):
-        """
-        Description: Trains the logistic regression model with gradient descent
-        
-        Input:
-            X:  (n, p) normalised matrix
-            y: (n,) dimensional vector where each value should be an integer indicating the class of the sample
-            epochs: default to 20, determines the number of epochs to train for
-            lr: default to 0.1, determines the learning rate of gradient descent
-            batch_size: default to 10, determines the size of each batch for mini batch gradient descent
-        """
-        ohe = sklearn.preprocessing.OneHotEncoder().fit(y.reshape(-1,1))
-        _y = ohe.transform(y.reshape(-1, 1))
-        _X = self._add_intercept(X) if self.intercept else X
-        n, p = _X.shape
-        self.w = np.zeros((self.classes, p))
-
-        assert batch_size <= n, 'Batch size must be smaller than the number of samples'
-        for epoch in range(epochs):
-            order = list(np.random.permutation(n))
-            for i in range(n // batch_size):  
-                batch = order[i * batch_size: (i + 1) * batch_size]
-                batched_x = _X[batch] 
-                batched_y = _y[batch]
-                batch_gradient = self._grad(batched_x, batched_y,batch_size)
-                self.w -= lr * batch_gradient / batch_size
-
-        (self.coef_, self.intercept_) =  (self.w[1:], self.w[0]) if self.intercept else (self.w[1:], None)
-
-    def predict(self, X):
-        """
-        Description: Predicts the class for each sample in the input
-        
-        Input:
-            X:  (n, p) normalised matrix
-            
-        Output:
-            pred: (n,) dimensional vector where each entry is the models predicted class for the corresponding sample from X
-        """
-        _X = self._add_intercept(X) if self.intercept else X
-        n, p = _X.shape
-        correct = 0
-        pred = np.zeros((n, 1))
-        for i in range(n):
-            xi = _X[[i], :]
-            pred[i, 0] = np.argmax(self._softmax( self.w @ xi.T ))
-
-        return pred.flatten().astype(int)
-
-    def score(self, X, y, verbose = False):
-        """
-        Description: Reports the error rate for the input data and labels
-        
-        Input:
-            X:  (n, p) normalised matrix
-            y: (n,) dimensional vector where each value should be an integer indicating the class of the sample
-            
-        Output:
-            error_rate: a scalar value indicating the percentage of incorrect predictions
-        """
-        n = X.shape[0]
-        y_pred = self.predict(X)
-        incorrect = ((y_pred != y)>0).sum()
-        error_rate = incorrect / n
-        print(((y_pred - y)>0))
-        if verbose:
-            print(f"Error Rate: {error_rate * 100:.2f} %",)
-        return error_rate
-    
-    
-    
-##############################################################
 # Trees
 ##############################################################
 
@@ -465,6 +263,207 @@ class AdaboostTree(RandomForest):
                 self.weights = (self.weights * np.exp( - alpha * preds * y)) / (2 * np.sqrt((1 - epsilon) * epsilon))
             else:
                 break
+
+##############################################################
+# Regression
+##############################################################
+class LinearRegression():
+
+    def __init__(self, method, intercept = True, lmbda = 0):
+        """
+        Description: Initialise linear regression model
+        
+        Input:
+            method: {'gradient_descent', 'linear_algebra'} determines the method used to solve for "w"
+            intercept: bool, default to True, determines whether a biased is used
+            lmbda: default to 0, used for ridge regression
+        """
+        assert method in ['gradient_descent', 'linear_algebra'], '"method" parameter must be "gradient_descent" or "linear_algebra".'
+        self.method = method
+        self.intercept = intercept
+        self.lmbda = lmbda
+
+    def _add_intercept(self, X):
+        interceptor = np.ones((X.shape[0], 1))
+        _X = np.append(interceptor, X, axis = 1)
+        return _X
+
+    def fit(self, X, y, epochs = None, lr = None):
+        """
+        Description: train the model with either closed form solution or gradient descent
+        
+        Input:
+            X: the predictors in shape (n, p) where n is the total number of samples and p is the number of predictors
+            y: the truth values of each sample in shape (n,)
+            epochs: default to None, determines the number of epochs trained for gradient descent
+            lr: default to None, determines the learning rate for gradient descent
+        """
+        _X = self._add_intercept(X) if self.intercept else X
+
+        if self.method == 'gradient_descent':
+            assert isinstance(epochs, int) and isinstance(lr, float), "Specify learning rate and/or epochs"
+            self.w = np.random.rand(_X.shape[1])
+            m = X.shape[0]
+            for i in range(epochs):
+                lmb = self.lmbda * np.ones_like(self.w)
+                lmb[0] = 0
+                gradient = (1/m) * ((_X.T @ (self.predict(X)-y)) + lmb * self.w)
+                self.w -= lr * gradient
+
+
+        elif self.method == 'linear_algebra':
+            n, p = _X.shape
+            A = np.identity(p)
+            A[0,0] = 0 if self.intercept else 1
+            self.w = np.linalg.inv((_X.T @ _X) + (self.lmbda * A)) @ (_X.T @ y)
+            
+        self.coef_ = self.w[1:] if self.intercept else self.w
+        self.intercept_ = self.w[0] if self.intercept else None
+
+    def predict(self, X):
+        """
+        Description: Predicts the class for each sample in the input
+        
+        Input:
+            X:  (n, p) normalised matrix
+            
+        Output:
+            pred: (n,) dimensional vector where each entry is the models predicted class for the corresponding sample from X
+        """
+        _X = self._add_intercept(X) if self.intercept else X
+        pred = _X @ self.w
+        return pred
+
+    def score(self, X, y, metric = 'mse'):
+        """
+        Description: reports the score of the model on input X and y
+        
+        Input:
+            X: the predictors in shape (n, p) where n is the total number of samples
+            y: the truth labels
+            metric: default to "mse", determines which of {mse or mae} to report
+            
+        Output:
+            {mse mae}: mse or mae for the input
+        """
+        assert metric in ['mse', 'mae'], '"score" parameter must be "mse" or "mae".'
+        return ((y - self.predict(X))**2).sum() if metric == 'mse' else abs(y - self.predict(X)).sum()
+
+class RidgeRegression(LinearRegression):
+
+    def __init__(self, method, lmbda, intercept = True):
+        """
+        Description: Initialise the ridge regression model
+        
+        Input:
+            method: {'gradient_descent', 'linear_algebra'} determines the method used to solve for "w"
+            intercept: bool, default to True, determines whether a biased is used
+            lmbda: regularisation parameter, set to 0 == OLS
+        """
+        super().__init__(method, intercept, lmbda)
+        
+##############################################################
+# Logistic Regression
+##############################################################
+
+class LogisticRegression():
+
+    def __init__(self, classes, intercept = True):
+        """
+        Description: Initialise logistic regression model
+        
+        Input:
+            classes:  number of classes in the dataset
+            intercept: default True, add intercept to model
+        """
+        self.classes = classes
+        self.intercept = intercept
+
+    def _add_intercept(self, X):
+        interceptor = np.ones((X.shape[0], 1))
+        _X = np.append(interceptor, X, axis = 1)
+        return _X
+
+    def _softmax(self, x):
+        return np.exp(x) / sum(np.exp(x))
+
+    def _grad(self, X, y, batch_size):
+        gradient = np.zeros((self.w.shape))
+        for i in range(batch_size):
+            yi = y[[i], :].T ; xi = X[[i], :]
+            yi_hat = self._softmax( self.w @ xi.T )
+            gradient += (yi_hat - yi) @ xi
+        return gradient
+
+    def fit(self, X, y, epochs = 20, lr = 0.1, batch_size = 10):
+        """
+        Description: Trains the logistic regression model with gradient descent
+        
+        Input:
+            X:  (n, p) normalised matrix
+            y: (n,) dimensional vector where each value should be an integer indicating the class of the sample
+            epochs: default to 20, determines the number of epochs to train for
+            lr: default to 0.1, determines the learning rate of gradient descent
+            batch_size: default to 10, determines the size of each batch for mini batch gradient descent
+        """
+        ohe = sklearn.preprocessing.OneHotEncoder().fit(y.reshape(-1,1))
+        _y = ohe.transform(y.reshape(-1, 1))
+        _X = self._add_intercept(X) if self.intercept else X
+        n, p = _X.shape
+        self.w = np.zeros((self.classes, p))
+
+        assert batch_size <= n, 'Batch size must be smaller than the number of samples'
+        for epoch in range(epochs):
+            order = list(np.random.permutation(n))
+            for i in range(n // batch_size):  
+                batch = order[i * batch_size: (i + 1) * batch_size]
+                batched_x = _X[batch] 
+                batched_y = _y[batch]
+                batch_gradient = self._grad(batched_x, batched_y,batch_size)
+                self.w -= lr * batch_gradient / batch_size
+
+        (self.coef_, self.intercept_) =  (self.w[1:], self.w[0]) if self.intercept else (self.w[1:], None)
+
+    def predict(self, X):
+        """
+        Description: Predicts the class for each sample in the input
+        
+        Input:
+            X:  (n, p) normalised matrix
+            
+        Output:
+            pred: (n,) dimensional vector where each entry is the models predicted class for the corresponding sample from X
+        """
+        _X = self._add_intercept(X) if self.intercept else X
+        n, p = _X.shape
+        correct = 0
+        pred = np.zeros((n, 1))
+        for i in range(n):
+            xi = _X[[i], :]
+            pred[i, 0] = np.argmax(self._softmax( self.w @ xi.T ))
+
+        return pred.flatten().astype(int)
+
+    def score(self, X, y, verbose = False):
+        """
+        Description: Reports the error rate for the input data and labels
+        
+        Input:
+            X:  (n, p) normalised matrix
+            y: (n,) dimensional vector where each value should be an integer indicating the class of the sample
+            
+        Output:
+            error_rate: a scalar value indicating the percentage of incorrect predictions
+        """
+        n = X.shape[0]
+        y_pred = self.predict(X)
+        incorrect = ((y_pred != y)>0).sum()
+        error_rate = incorrect / n
+        print(((y_pred - y)>0))
+        if verbose:
+            print(f"Error Rate: {error_rate * 100:.2f} %",)
+        return error_rate
+    
 ##############################################################
 # primal/kernelSVM
 ##############################################################
