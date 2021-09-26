@@ -2,6 +2,30 @@
 Implementation of machine learning algorithms from scratch. 
 
 This package was developed for my own educational purposes and therefore, it is not recommended for actual usage.
+
+Each algorithm has a general API akin to sklearn's:
+```python
+from models.supervised import * # "supervised" module contains supervised learning models
+from models.unsupervised import * # "unsupervised" module contains unsupervised learning models
+
+model = algorithm(model_params) # initiate a model (replace "algorithm" with PCA, LinearRegression, etc)
+model.fit(Xtr, ytr) # fit the model to the data, ytr is not required for models in the "unsupervised" module
+
+# some regression models will have a score method to measure the model's performance on a particular test set
+model.score(Xte, yte, type) # type can be "mae" or "mse" 
+
+# some classification models will have a score method to measure the model's accuracy on a particular test set
+model.score(Xte, yte) 
+
+# to make predictions, use
+model.predict(Xte)
+
+# the only anomaly is the PCA model which has a transform method to project the original data into a reduced dimensionality
+z = PCA.transform(Xte)
+# to reconstruct z into its original format, use inver_transform
+x = PCA.inverse_transform(z) 
+
+```
 ## Table of Contents
 1. [Algorithms](#algorithms)
 2. [Installation](#installation)
