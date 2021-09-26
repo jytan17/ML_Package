@@ -209,6 +209,8 @@ class LogisticRegression():
 # Trees
 ##############################################################
 
+import numpy as np
+
 class _TreeNode():
     
     def __init__(self, left, right, parent, cutoff_id, cutoff_val, prediction):
@@ -220,7 +222,6 @@ class _TreeNode():
         self.prediction = prediction
 
     def _sqsplit(self, xTr,yTr,weights=[]):
-
 
         N,D = xTr.shape
         assert D > 0 # must have at least one dimension
@@ -435,11 +436,9 @@ class AdaboostTree(RandomForest):
     def __init__(self, maxiter = 100, maxdepth=2):
         """
         Description: Learns a boosted decision tree.
-
         Input:
             maxiter:  default to 100, determines the maximum number of trees
             maxdepth: default to 2, determines maximum depth of a tree
-
         """
         super().__init__(maxdepth)
         self.maxdepth = maxdepth
