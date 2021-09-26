@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.preprocessing
-from cvxpy import *
+from cvxpy import quad_form, multiply, Variable, Problem, Minimize
 
 ##############################################################
 # Trees
@@ -64,10 +64,7 @@ class _TreeNode():
 
         if n == 0:
             self.prediction = None
-        elif (yTr == labels[0]).sum() == n:
-            W = np.sum(weights)
-            self.prediction = sum(weights * yTr) / W
-        elif (yTr == labels[1]).sum() == n:
+        elif (yTr == labels[0]).sum() == n or (yTr == labels[1]).sum() == n:
             W = np.sum(weights)
             self.prediction = sum(weights * yTr) / W
         elif current_depth >= maxdepth:
