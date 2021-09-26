@@ -31,8 +31,7 @@ x = PCA.inverse_transform(z)
 2. [Installation](#installation)
 3. [Example usecases](#examples)
     1. [SVM](#svm)
-    2. [PCA](#pca)
-    3. [Adaboosted Trees](#tree)   
+    2. [PCA](#pca)  
 
 ## Algorithms (Implemented/planned) <a name="algorithms"></a>
 - [x] Linear Regression
