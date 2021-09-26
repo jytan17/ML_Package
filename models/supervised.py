@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.preprocessing
-from cvxpy import quad_form, multiply, Variable, Problem, Minimize, pos
+from cvxpy import quad_form, multiply, Variable, Problem, Minimize, pos, norm
 
 ##############################################################
 # Trees
