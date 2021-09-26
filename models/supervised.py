@@ -269,7 +269,7 @@ class _TreeNode():
         if n == 0:
             print('a')
             self.prediction = None
-        elif sum(yTr == labels[0]) == n or sum(yTr == labels[1]) == n:
+        elif (sum(yTr == labels[0]) == n) or (sum(yTr == labels[1]) == n):
             W = np.sum(weights)
             self.prediction = sum(weights * yTr) / W
         elif current_depth >= maxdepth:
