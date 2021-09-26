@@ -209,8 +209,6 @@ class LogisticRegression():
 # Trees
 ##############################################################
 
-import numpy as np
-
 class _TreeNode():
     
     def __init__(self, left, right, parent, cutoff_id, cutoff_val, prediction):
@@ -267,9 +265,11 @@ class _TreeNode():
         labels = list(set(yTr))
 
         if n == 0:
-            print('a')
             self.prediction = None
-        elif (sum(yTr == labels[0]) == n) or (sum(yTr == labels[1]) == n):
+        elif (yTr == labels[0]).sum() == n:
+            W = np.sum(weights)
+            self.prediction = sum(weights * yTr) / W
+        elif (yTr == labels[1]).sum() == n:
             W = np.sum(weights)
             self.prediction = sum(weights * yTr) / W
         elif current_depth >= maxdepth:
