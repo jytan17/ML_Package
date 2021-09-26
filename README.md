@@ -63,7 +63,7 @@ def spiraldata(N=300):
  xTr,yTr,xTe,yTe=spiraldata()
 
 
-clf = kernelSVM(C=10, ktype="rbf", 1)   # initiate a kernelSVM classifier, specify kernel type and their corresponding kernel parameter
+clf = kernelSVM(10, "rbf", 1)   # initiate a kernelSVM classifier, specify kernel type and their corresponding kernel parameter
 clf.fit(xTr, yTr)                       # fit the model; models parameters can be obtained with clf.coef_ and clf.intercept_
 clf.score(xTe, yTe)                     # obtain the error rate of the model on dataset xTe, yTe
 ```
