@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 ###################################
 # Clustering
 ###################################
@@ -77,9 +78,10 @@ class kMeans():
             convergence = (new_z==z).all()
             z = new_z
             mu = new_mu
-        
+
+        ss = 0
         for i in range(self.k):
-            ss += ((X[z==i] - self.mu[k])**2).sum()
+            ss += ((X[z==i] - mu[i])**2).sum()
             
         self.sum_square_dif = ss
         self.cluster_centers = mu
