@@ -5,14 +5,14 @@ This package was developed for my own educational purposes and therefore, it is 
 
 Each algorithm has a general API akin to that of sklearn's:
 ```python
-from models.supervised import * # "supervised" module contains supervised learning models
-from models.unsupervised import * # "unsupervised" module contains unsupervised learning models
+from models.supervised import *     # "supervised" module contains supervised learning models
+from models.unsupervised import *   # "unsupervised" module contains unsupervised learning models
 
-model = algorithm(model_params) # initiate a model (replace "algorithm" with PCA, LinearRegression, etc)
-model.fit(Xtr, ytr) # fit the model to the data, ytr is not required for models in the "unsupervised" module
+model = algorithm(model_params)     # initiate a model (replace "algorithm" with PCA, LinearRegression, etc)
+model.fit(Xtr, ytr)                 # fit the model to the data, ytr is not required for models in the "unsupervised" module
 
 # some regression models will have a score method to measure the model's performance on a particular test set
-model.score(Xte, yte, type) # type can be "mae" or "mse" 
+model.score(Xte, yte, type)         # type can be "mae" or "mse" 
 
 # some classification models will have a score method to measure the model's accuracy on a particular test set
 model.score(Xte, yte) 
@@ -67,7 +67,7 @@ pip install git+https://github.com/jytan17/ML_Package
 from models.supervised import kernelSVM
 
 # generate a spiral dataset
-clf = kernelSVM(10, "rbf", 1)   # initiate a kernelSVM classifier, specify kernel type and their corresponding kernel parameter
+clf = kernelSVM(10, "rbf", 1)           # initiate a kernelSVM classifier, specify kernel type and their corresponding kernel parameter
 clf.fit(xTr, yTr)                       # fit the model; models parameters can be obtained with clf.coef_ and clf.intercept_
 clf.score(xTe, yTe)                     # obtain the error rate of the model on dataset xTe, yTe
 ```
@@ -77,8 +77,8 @@ clf.score(xTe, yTe)                     # obtain the error rate of the model on 
 ```python
 from models.unsupervised import PCA
 
-model = PCA(m = 2) # "m" is the number of principle components to return
-model.fit(Xte) # calculate the PC's
+model = PCA(m = 2)              # "m" is the number of principle components to return
+model.fit(Xte)                  # calculate the PC's
 
 z = model.transform(X) # project original data into a reduced dimensional format
 X_hat = model.inverset_transform(z) # reconstruct reduced data into its original format
