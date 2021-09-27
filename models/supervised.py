@@ -668,7 +668,7 @@ class FeedForward():
 # k nearest neighbour
 ##############################################################
 class _knn():
-    def __init__(self, Xtr, ytr, k, method = 'l2'):
+    def __init__(self, k, method = 'l2'):
         """
         Description: Initialise the k-nearest neighbour model
 
@@ -677,8 +677,6 @@ class _knn():
         """
         self.method = method
         self.measure_method = {"l2": self._l2distance}
-        self.Xtr = Xtr
-        self.ytr = ytr
         self.k = k
 
         assert self.method in list(self.measure_method.keys()), "Use {L2} norm"
@@ -706,7 +704,7 @@ class _knn():
         return indices, dists
 
 class knnRegression(_knn):
-    def __init__(self, Xtr, ytr, k, method = 'l2'):
+    def __init__(self, k, method = 'l2'):
         """
         Description: Initialise the k-nearest neighbour model
 
@@ -714,7 +712,11 @@ class knnRegression(_knn):
             k: the number of nearest neighbours to consider when making predictions
             measure: {L2, L1}default to l2, the metrics used to search for nearest neighbours
         """
-        super().__init__(Xtr, ytr, k, method)
+        super().__init__(k, method)
+
+    def fit(self, Xtr, ytr):
+        self.Xtr = Xtr
+        self.ytr = ytr
 
     def predict(self, Xte):
         """
@@ -756,14 +758,14 @@ class knnRegression(_knn):
 
 
 class knnClassifier(_knn):
-    def __init__(self, Xtr, ytr, k, method = 'l2'):
+    def __init__(self, k, method = 'l2'):
         """
         Description: Initialise the k-nearest neighbour model
 
         Input:
             X: (n, d) dimensional matrix of datapoints
         """
-        super().__init__(Xtr, ytr, k, method)
+        super().__init__(k, method)
 
     def _mode(self, array):
         unique = list(set(array))
@@ -776,6 +778,10 @@ class knnClassifier(_knn):
                 mode = i
                 
         return mode
+
+    def fit(self, Xtr, ytr):
+        self.Xtr = Xtr
+        self.ytr = ytr
 
     def predict(self, Xte):
         """
@@ -814,7 +820,6 @@ class knnClassifier(_knn):
         y_pred = self.predict(X)
         incorrect = ((y_pred != y)>0).sum()
         error_rate = incorrect / n
-        print(((y_pred - y)>0))
         if verbose:
             print(f"Error Rate: {error_rate * 100:.2f} %",)
         return error_rate
