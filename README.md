@@ -3,7 +3,7 @@ Implementation of machine learning algorithms from scratch.
 
 This package was developed for my own educational purposes and therefore, it is not recommended for actual usage.
 
-Each algorithm has a general API akin to sklearn's:
+Each algorithm has a general API akin to that of sklearn's:
 ```python
 from models.supervised import * # "supervised" module contains supervised learning models
 from models.unsupervised import * # "unsupervised" module contains unsupervised learning models
