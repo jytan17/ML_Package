@@ -1,7 +1,5 @@
 # Machine Learning Package
-Implementation of machine learning algorithms from scratch. 
-
-This package was developed for my own educational purposes and therefore, it is not recommended for actual usage.
+This repository contains the implementations of some of the most common machine learning algorithms, packaged into a common API. This package was developed for my own educational purposes and therefore, it is not recommended for actual usage.
 
 Each algorithm has a general API akin to that of sklearn's:
 ```python
