@@ -77,7 +77,7 @@ clf.score(xTe, yTe)                     # obtain the error rate of the model on 
 ```python
 from models.unsupervised import PCA
 
-model = PCA(m = 2)              # "m" is the number of principle components to return
+model = PCA(m = 2)              # "m" is the number of principle components to use
 model.fit(Xte)                  # calculate the PC's
 
 z = model.transform(X) # project original data into a reduced dimensional format
