@@ -84,7 +84,7 @@ X_hat = model.inverset_transform(z) # reconstruct reduced data into its original
 
 ```
 ### Neural Network <a name="nn"></a>
-
+The functionality of this particular algorithm is fairly limited as only classfication tasks are supported with only the L2 loss function. Future revision of this will include other loss functions and regression tasks. 
 ```python
 from models.supervised import FeedForward
 
