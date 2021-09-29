@@ -35,7 +35,7 @@ class FeedForward():
             if Xva is not None and yva is not None:
                 validation_data = [(x.reshape(-1, 1), y.reshape(-1, 1)) for x, y in zip(Xva, yva)]
                 n_test = len(validation_data)
-                print("Epoch {0}: {1} / {2}".format(j, self.evaluate(validation_data), n_test))
+                print("Epoch {0} validation acc. {1} / {2}".format(j, self.evaluate(validation_data), n_test))
             else:
                 print("Epoch {0} complete".format(j))
 
