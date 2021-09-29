@@ -30,6 +30,7 @@ x = PCA.inverse_transform(z)
 3. [Example usecases](#examples)
     1. [SVM](#svm)
     2. [PCA](#pca)  
+    3. [Neural Network](#nn)
 
 ## Algorithms (Implemented/planned) <a name="algorithms"></a>
 - [x] Linear Regression
@@ -82,4 +83,12 @@ z = model.transform(X) # project original data into a reduced dimensional format
 X_hat = model.inverset_transform(z) # reconstruct reduced data into its original format
 
 ```
+### Neural Network <a name="nn"></a>
 
+```python
+from models.supervised import FeedForward
+
+model = FeedForward(sizes = [100, 20, 20, 10])              # "sizes" is the number neurons for each layer; first entry of the list should match the input dimension and last entry should match the output dimension
+model.fit(Xtr, ytr, e, m, eta)                  # train the network for "e" epochs with mini batch size "m" and learning rate "eta"
+model.predict(Xte)
+```
