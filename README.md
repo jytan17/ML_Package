@@ -1,4 +1,4 @@
-# Machine Learning Package
+# [Machine Learning Package](https://jytan17.github.io/project/Machine-Learning-Package-Experiements/)
 This repository contains the implementations of some of the most common machine learning algorithms, packaged into a common API (inspired by scikit-learn). This package was developed for my own educational purposes and therefore, it is not recommended for actual usage.
 
 Each algorithm has a general API akin to that of sklearn's:
@@ -50,7 +50,7 @@ x = PCA.inverse_transform(z)
 - [x] K-means
 - [ ] Gaussian Mixture Model
 
-Some interesting experiments to test my implementations were documented here "https://jytan17.github.io/Machine-Learning-package/"!
+Some interesting experiments to test my implementations were documented [here](https://jytan17.github.io/project/Machine-Learning-Package-Experiements/)!
 
 ## Installation <a name="installation"></a>
 Using pip:
