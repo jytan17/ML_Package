@@ -35,8 +35,6 @@ x = PCA.inverse_transform(z)
 ## Algorithms (Implemented/planned) <a name="algorithms"></a>
 - [x] Linear Regression
 - [x] Ridge Regression
-- [ ] Lasso Regression
-- [ ] Kernelised Regression
 - [x] Logistic Regression
 - [x] Classification and Regression Tree (CART)
 - [x] Random Forest
@@ -45,10 +43,8 @@ x = PCA.inverse_transform(z)
 - [x] Kernelised SVM
 - [x] K-Nearest Neighbours
 - [x] Feedforward Network
-- [ ] Recurrent Neural Network (Vanilla)
 - [x] PCA
 - [x] K-means
-- [ ] Gaussian Mixture Model
 
 Some interesting experiments to test my implementations were documented [here](https://jytan17.github.io/project/Machine-Learning-Package-Experiements/)!
 
